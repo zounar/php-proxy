@@ -350,7 +350,17 @@ foreach ($responseHeaders AS $header)
 {
     if (preg_match('/^(?:Content-Type|Content-Language|Set-Cookie|X)/i', $header))
     {
-        header($header);
+        // Replace cookie domain and path
+        if (strpos($header, 'Set-Cookie') !== false)
+        {
+            $header = preg_replace('/((?>domain)\s*=\s*)[^;\s]+/', '\1.' . $_SERVER['HTTP_HOST'], $header);
+            $header = preg_replace('/\s*;?\s*path\s*=\s*[^;\s]+/', '', $header);
+			header($header, false);
+        }
+		else
+		{
+			header($header);
+		}
     }
 }
 

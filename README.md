@@ -5,7 +5,7 @@ This proxy script allows you to forward all HTTP/HTTPS requests to another serve
 ## How to use
 * Simply put the script somewhere
 * Make a CURL request for this script
-* Add **Proxy-Auth** header with auth key (can be found in the script, line 25)
+* Add **Proxy-Auth** header with auth key [found here](https://github.com/ZonRobin/php-proxy/blob/master/proxy.php#L27)
 * Add **Proxy-Target-URL** header with URL to be requested by the proxy
 * (Optional) Add **Proxy-Debug** header for debug mode
 

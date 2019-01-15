@@ -1,6 +1,6 @@
 # Simple PHP Proxy
 
-This proxy script allows you to forward all HTTP/HTTPS requests to another server. Works both for simple GET requests and POST requests with files. It has minimal requirements (PHP 5.0, libcurl) which are available even on the smallest free hostings and has it's own simple authorization.
+This proxy script allows you to forward all HTTP/HTTPS requests to another server. Works for all common request types including GET , POST requests with files, PATCH and PUT requests. It has minimal requirements (PHP 5.0, libcurl) which are available even on the smallest free hostings and has it's own simple authorization and cookie support.
 
 ## How to use
 * Simply put the script somewhere

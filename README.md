@@ -10,10 +10,10 @@ This proxy script allows you to forward all HTTP/HTTPS requests to another serve
 * (Optional) Add **Proxy-Debug** header for debug mode
 
 ## Example
-Proxy script is at http://www.foo.bar. I want to make a GET request to https://www.github.com. My auth token is default, I want the debug mode.
+Proxy script is at http://www.foo.bar/proxy.php. I want to execute a GET request to https://www.github.com. The auth token is default one, using debug mode.
 
 ```php
-$request = curl_init('http://www.foo.bar');
+$request = curl_init('http://www.foo.bar/proxy.php');
 
 curl_setopt($request, CURLOPT_HTTPHEADER, array(
     'Proxy-Auth: Bj5pnZEX6DkcG6Nz6AjDUT1bvcGRVhRaXDuKDX9CjsEs2',

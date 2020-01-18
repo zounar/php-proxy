@@ -36,13 +36,13 @@ define('HTTP_PROXY_TARGET_URL', 'HTTP_PROXY_TARGET_URL');
 define('HTTP_PROXY_DEBUG', 'HTTP_PROXY_DEBUG');
 
 // Uncomment this to simulate target header
-//$_SERVER[HTTP_PROXY_TARGET_URL] = 'https://github.com/';
+// $_SERVER[HTTP_PROXY_TARGET_URL] = 'https://github.com/';
 
 // Uncomment this to simulate auth key (or to disable the need of passing the key with each request)
-//$_SERVER[HTTP_PROXY_AUTH] = AUTH_KEY;
+// $_SERVER[HTTP_PROXY_AUTH] = AUTH_KEY;
 
 // Uncomment this to enable debug mode
-//$_SERVER[HTTP_PROXY_DEBUG] = '1';
+// $_SERVER[HTTP_PROXY_DEBUG] = '1';
 
 // If true, PHP safe mode compatibility will not be checked (you may not need it if no POST files are sent over proxy)
 define('IGNORE_SAFE_MODE', false);
@@ -86,7 +86,7 @@ function exitWithError($message = 'unknown')
  */
 function getSkippedHeaders()
 {
-    return array(HTTP_PROXY_TARGET_URL, HTTP_PROXY_AUTH, 'HTTP_HOST', 'HTTP_ACCEPT_ENCODING');
+    return array(HTTP_PROXY_TARGET_URL, HTTP_PROXY_AUTH, HTTP_PROXY_DEBUG, 'HTTP_HOST', 'HTTP_ACCEPT_ENCODING');
 }
 
 
@@ -348,19 +348,22 @@ $responseHeaders = preg_split('/[\r\n]+/', $responseHeader);
 // Pass headers to output
 foreach ($responseHeaders AS $header)
 {
-    if (preg_match('/^(?:Content-Type|Content-Language|Set-Cookie|X)/i', $header))
+    // Pass following headers to response
+    if (preg_match('/^(?:Content-Type|Content-Language|Content-Security|X)/i', $header))
     {
-        // Replace cookie domain and path
-        if (strpos($header, 'Set-Cookie') !== false)
-        {
-            $header = preg_replace('/((?>domain)\s*=\s*)[^;\s]+/', '\1.' . $_SERVER['HTTP_HOST'], $header);
-            $header = preg_replace('/\s*;?\s*path\s*=\s*[^;\s]+/', '', $header);
-			header($header, false);
-        }
-		else
-		{
-			header($header);
-		}
+        header($header);
+    }
+    // Replace cookie domain and path
+    else if (strpos($header, 'Set-Cookie') !== false)
+    {
+        $header = preg_replace('/((?>domain)\s*=\s*)[^;\s]+/', '\1.' . $_SERVER['HTTP_HOST'], $header);
+        $header = preg_replace('/\s*;?\s*path\s*=\s*[^;\s]+/', '', $header);
+        header($header, false);
+    }
+    // Decode response body if gzip encoding is used
+    else if ($header === 'Content-Encoding: gzip')
+    {
+        $responseBody = gzdecode($responseBody);
     }
 }
 
@@ -388,11 +391,11 @@ if ($debug)
     echo implode($responseHeaders, PHP_EOL);
     echo HR;
 
-    echo 'Headers sent back from proxy' . PHP_EOL . PHP_EOL;
+    echo 'Headers sent from proxy to client' . PHP_EOL . PHP_EOL;
     echo implode(headers_list(), PHP_EOL);
     echo HR;
 
-    echo 'Body received from target' . PHP_EOL . PHP_EOL;
+    echo 'Body sent from proxy to client' . PHP_EOL . PHP_EOL;
     echo $responseBody;
 }
 else

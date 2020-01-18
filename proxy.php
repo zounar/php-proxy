@@ -6,7 +6,6 @@
  * Credits to:
  *    https://github.com/cowboy/php-simple-proxy/
  *    https://gist.github.com/iovar
- *    craig(at)raigfrancis.co.uk - for http_response_code
  *
  * Usage:
  *    To call this script two headers must be sent
@@ -14,10 +13,10 @@
  *        HTTP_PROXY_TARGET_URL     URL to be called by this script
  *
  * Debug:
- *    To debug, send HTTP_PROXY_DEBUG header with any value
+ *    To debug, send HTTP_PROXY_DEBUG header with any non-zero value
  *
  * Compatibility:
- *    PHP 5
+ *    PHP 5.4
  *    libcurl
  *    PHP safe_mode disabled
  */
@@ -57,7 +56,7 @@ define('HR', PHP_EOL . PHP_EOL . '----------------------------------------------
  * @param mixed $default
  * @return mixed
  */
-function ri(&$variable, $default = NULL)
+function ri(&$variable, $default = null)
 {
     if (isset($variable))
     {
@@ -113,61 +112,6 @@ if (!function_exists('exceptionHandler'))
     function exceptionHandler(Exception $ex)
     {
         exitWithError($ex->getMessage() . ' in '. $ex->getFile() . ' at line ' . $ex->getLine());
-    }
-}
-
-
-if (!function_exists('http_response_code'))
-{
-    /**
-     * @param int $code
-     */
-    function http_response_code($code)
-    {
-        switch ($code)
-        {
-            case 100: $text = 'Continue'; break;
-            case 101: $text = 'Switching Protocols'; break;
-            case 200: $text = 'OK'; break;
-            case 201: $text = 'Created'; break;
-            case 202: $text = 'Accepted'; break;
-            case 203: $text = 'Non-Authoritative Information'; break;
-            case 204: $text = 'No Content'; break;
-            case 205: $text = 'Reset Content'; break;
-            case 206: $text = 'Partial Content'; break;
-            case 300: $text = 'Multiple Choices'; break;
-            case 301: $text = 'Moved Permanently'; break;
-            case 302: $text = 'Moved Temporarily'; break;
-            case 303: $text = 'See Other'; break;
-            case 304: $text = 'Not Modified'; break;
-            case 305: $text = 'Use Proxy'; break;
-            case 400: $text = 'Bad Request'; break;
-            case 401: $text = 'Unauthorized'; break;
-            case 402: $text = 'Payment Required'; break;
-            case 403: $text = 'Forbidden'; break;
-            case 404: $text = 'Not Found'; break;
-            case 405: $text = 'Method Not Allowed'; break;
-            case 406: $text = 'Not Acceptable'; break;
-            case 407: $text = 'Proxy Authentication Required'; break;
-            case 408: $text = 'Request Time-out'; break;
-            case 409: $text = 'Conflict'; break;
-            case 410: $text = 'Gone'; break;
-            case 411: $text = 'Length Required'; break;
-            case 412: $text = 'Precondition Failed'; break;
-            case 413: $text = 'Request Entity Too Large'; break;
-            case 414: $text = 'Request-URI Too Large'; break;
-            case 415: $text = 'Unsupported Media Type'; break;
-            case 500: $text = 'Internal Server Error'; break;
-            case 501: $text = 'Not Implemented'; break;
-            case 502: $text = 'Bad Gateway'; break;
-            case 503: $text = 'Service Unavailable'; break;
-            case 504: $text = 'Gateway Time-out'; break;
-            case 505: $text = 'HTTP Version not supported'; break;
-            default: $text = '';
-        }
-
-        $protocol = (isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0');
-        header($protocol . ' ' . $code . ' ' . $text);
     }
 }
 
@@ -255,11 +199,11 @@ $request = curl_init($targetURL);
 
 // Set input data
 $requestMethod = strtoupper(ri($_SERVER['REQUEST_METHOD']));
-if($requestMethod === "PUT" || $requestMethod === "PATCH")
+if ($requestMethod === "PUT" || $requestMethod === "PATCH")
 {
     curl_setopt($request, CURLOPT_POSTFIELDS, file_get_contents('php://input'));
 }
-elseif($requestMethod === "POST")
+elseif ($requestMethod === "POST")
 {
     $data = array();
 
@@ -270,7 +214,7 @@ elseif($requestMethod === "POST")
             curl_setopt($request, CURLOPT_SAFE_UPLOAD, false);
         }
 
-        foreach ($_FILES AS $fileName => $file)
+        foreach ($_FILES as $fileName => $file)
         {
             $filePath = realpath($file['tmp_name']);
 
@@ -293,13 +237,13 @@ elseif($requestMethod === "POST")
 // Parse request headers
 $httpHeaders = array();
 $httpHeadersAll = array();
-foreach( $_SERVER AS $key => $value )
+foreach ($_SERVER as $key => $value)
 {
     if (strpos($key, 'HTTP_') === 0)
     {
         $header = str_replace('_', '-', ucwords(strtolower(str_replace('HTTP_', '', $key)), '_')) . ': '. $value;
 
-        if(!in_array($key, getSkippedHeaders()))
+        if (!in_array($key, getSkippedHeaders()))
         {
             $httpHeaders[] = $header;
         }
@@ -308,11 +252,13 @@ foreach( $_SERVER AS $key => $value )
     }
 }
 
-curl_setopt($request, CURLOPT_FOLLOWLOCATION, true );
-curl_setopt($request, CURLOPT_HEADER, true );
-curl_setopt($request, CURLOPT_RETURNTRANSFER, true );
-curl_setopt($request, CURLINFO_HEADER_OUT, true);
-curl_setopt($request, CURLOPT_HTTPHEADER, $httpHeaders);
+curl_setopt_array($request, [
+    CURLOPT_FOLLOWLOCATION => true,
+    CURLOPT_HEADER => true,
+    CURLOPT_RETURNTRANSFER => true,
+    CURLINFO_HEADER_OUT => true,
+    CURLOPT_HTTPHEADER => $httpHeaders
+]);
 
 //----------------------------------
 
@@ -330,7 +276,6 @@ if ($responseCode == 0)
     $responseCode = 404;
 }
 
-
 // Get real target URL after all redirects
 $finalRequestURL = curl_getinfo($request, CURLINFO_EFFECTIVE_URL);
 if (!empty($finalRequestURL))
@@ -346,7 +291,7 @@ curl_close($request);
 // Split header text into an array.
 $responseHeaders = preg_split('/[\r\n]+/', $responseHeader);
 // Pass headers to output
-foreach ($responseHeaders AS $header)
+foreach ($responseHeaders as $header)
 {
     // Pass following headers to response
     if (preg_match('/^(?:Content-Type|Content-Language|Content-Security|X)/i', $header))
@@ -354,14 +299,14 @@ foreach ($responseHeaders AS $header)
         header($header);
     }
     // Replace cookie domain and path
-    else if (strpos($header, 'Set-Cookie') !== false)
+    elseif (strpos($header, 'Set-Cookie') !== false)
     {
         $header = preg_replace('/((?>domain)\s*=\s*)[^;\s]+/', '\1.' . $_SERVER['HTTP_HOST'], $header);
         $header = preg_replace('/\s*;?\s*path\s*=\s*[^;\s]+/', '', $header);
         header($header, false);
     }
     // Decode response body if gzip encoding is used
-    else if ($header === 'Content-Encoding: gzip')
+    elseif ($header === 'Content-Encoding: gzip')
     {
         $responseBody = gzdecode($responseBody);
     }

@@ -9,6 +9,8 @@ This proxy script allows you to forward all HTTP/HTTPS requests to another serve
 * Add **Proxy-Target-URL** header with URL to be requested by the proxy
 * (Optional) Add **Proxy-Debug** header for debug mode
 
+In order to protect using proxy by unauthorized users, consider changing `Proxy-Auth` token in [proxy source file](https://github.com/ZonRobin/php-proxy/blob/master/proxy.php#L27) and in all your requests.
+
 ## Example
 Following example shows how to execute GET request to https://www.github.com. Proxy script is at http://www.foo.bar/proxy.php. All proxy settings are kept default, the response is automatically echoed.
 

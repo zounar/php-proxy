@@ -193,7 +193,7 @@ if ($requestMethod === "PUT" || $requestMethod === "PATCH") {
             $filePath = realpath($file['tmp_name']);
 
             if (CURLFILE) {
-                $data[$fileName] = new CURLFile($filePath);
+                $data[$fileName] = new CURLFile($filePath, $file['type'], $file['name']);
             } else {
                 $data[$fileName] = '@' . $filePath;
             }
@@ -281,7 +281,7 @@ foreach ($responseHeaders as $header) {
 
 if ($debug) {
     echo 'Headers sent to proxy' . PHP_EOL . PHP_EOL;
-    echo implode($httpHeadersAll, PHP_EOL);
+    echo implode(PHP_EOL, $httpHeadersAll);
     echo HR;
 
     echo '$_GET sent to proxy' . PHP_EOL . PHP_EOL;
@@ -293,15 +293,15 @@ if ($debug) {
     echo HR;
 
     echo 'Headers sent to target' . PHP_EOL . PHP_EOL;
-    echo implode($requestHeaders, PHP_EOL);
+    echo implode(PHP_EOL, $requestHeaders);
     echo HR;
 
     echo 'Headers received from target' . PHP_EOL . PHP_EOL;
-    echo implode($responseHeaders, PHP_EOL);
+    echo implode(PHP_EOL, $responseHeaders);
     echo HR;
 
     echo 'Headers sent from proxy to client' . PHP_EOL . PHP_EOL;
-    echo implode(headers_list(), PHP_EOL);
+    echo implode(PHP_EOL, headers_list());
     echo HR;
 
     echo 'Body sent from proxy to client' . PHP_EOL . PHP_EOL;

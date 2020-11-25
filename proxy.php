@@ -193,7 +193,7 @@ if ($requestMethod === "PUT" || $requestMethod === "PATCH") {
             $filePath = realpath($file['tmp_name']);
 
             if (CURLFILE) {
-                $data[$fileName] = new CURLFile($filePath);
+                $data[$fileName] = new CURLFile($filePath, $file['type'], $file['name']);
             } else {
                 $data[$fileName] = '@' . $filePath;
             }

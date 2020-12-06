@@ -1,0 +1,40 @@
+{
+  "name": "zounar/php-proxy",
+  "version": "0.9.0",
+  "description": "Forward your HTTP/HTTPS requests to another server.",
+  "type": "library",
+  "keywords": [
+    "php-proxy",
+    "proxy-script",
+    "php",
+    "proxy",
+    "http",
+    "http-proxy",
+    "curl",
+    "curlphp"
+  ],
+  "homepage": "https://github.com/zounar/php-proxy",
+  "readme": "README.md",
+  "require": {
+    "php": ">=5.6.0",
+    "ext-curl": "*",
+    "ext-zlib": "*"
+  },
+  "license": "unlicense",
+  "authors": [
+    {
+      "name": "Robin Zounar",
+      "homepage": "https://zounar.me"
+    }
+  ],
+  "support": {
+    "issues": "https://github.com/zounar/php-proxy/issues",
+    "source": "https://github.com/zounar/php-proxy",
+    "docs": "https://github.com/zounar/php-proxy/blob/master/README.md"
+  },
+  "autoload": {
+    "psr-4": {
+      "Zounar\\PHPProxy\\": "./"
+    }
+  }
+}

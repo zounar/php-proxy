@@ -1,0 +1,11 @@
+version: "2"
+services:
+  proxy:
+#    image: webdevops/php-nginx:8.0
+#    image: webdevops/php-nginx:7.4
+    image: webdevops/php-nginx:5.6
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./:/app

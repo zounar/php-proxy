@@ -135,7 +135,7 @@ class Proxy
      */
     public static function isInstalledWithComposer()
     {
-        $autoloaderPath = join(DIRECTORY_SEPARATOR, [dirname(dirname(__DIR__)), 'autoloader.php']);
+        $autoloaderPath = join(DIRECTORY_SEPARATOR, [dirname(dirname(__DIR__)), 'autoload.php']);
         return is_readable($autoloaderPath);
     }
 

@@ -1,6 +1,5 @@
 {
   "name": "zounar/php-proxy",
-  "version": "1.0.0",
   "description": "Forward your HTTP/HTTPS requests to another server.",
   "type": "library",
   "keywords": [

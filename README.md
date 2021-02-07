@@ -5,8 +5,8 @@ including GET, POST requests with files, PATCH and PUT requests. It has minimal 
 (PHP >=5.6, libcurl, gzip) which are available even on the smallest free hostings and has its own simple authorization 
 and cookie support.
 
-## How to use (via copying the script)
-* Copy the [Proxy.php](Proxy.php) script to publicly-accessible folder of a PHP web server
+## How to use
+* Copy the [Proxy.php](Proxy.php) script to publicly-accessible folder of a PHP web server (the script is standalone and has no PHP dependencies)
 * Make a cURL request targeting this script
 * Add **Proxy-Auth** header with auth key [found here](https://github.com/zounar/php-proxy/blob/master/Proxy.php#L40)
 * Add **Proxy-Target-URL** header with URL to be requested by the proxy
@@ -15,6 +15,8 @@ and cookie support.
 In order to protect using proxy by unauthorized users, consider changing `Proxy-Auth` token in [proxy source file](https://github.com/zounar/php-proxy/blob/master/Proxy.php#L40) and in all your requests.
 
 ## How to use (via composer)
+This might be useful when you want to redirect requests coming into your app. 
+
 * Run `composer require zounar/php-proxy`
 * Add `Proxy::run();` line to where you want to execute it (usually into a controller action)
   * In this example, the script is in `AppController` - `actionProxy`:

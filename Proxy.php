@@ -60,6 +60,18 @@ class Proxy
     public static $DEBUG = false;
 
     /**
+     * When set to false the fetched header is not included in the result
+     * @var bool
+     */
+    public static $CURLOPT_HEADER = true;
+
+    /**
+     * When set to false the fetched result is echoed immediately instead of waiting for the fetch to complete first
+     * @var bool
+     */
+    public static $CURLOPT_RETURNTRANSFER = true;
+
+    /**
      * Target URL is set via Proxy-Target-URL header. For debugging purposes you might set it directly here.
      * This value overrides any value specified in Proxy-Target-URL header.
      * @var string
@@ -319,8 +331,8 @@ class Proxy
 
         curl_setopt_array($request, [
             CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HEADER => true,
-            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HEADER => static::$CURLOPT_HEADER,
+            CURLOPT_RETURNTRANSFER => static::$CURLOPT_RETURNTRANSFER,
             CURLINFO_HEADER_OUT => true,
             CURLOPT_HTTPHEADER => $headers
         ]);

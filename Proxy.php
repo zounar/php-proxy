@@ -266,11 +266,25 @@ class Proxy
     }
 
     /**
+     * @return string
+     */
+    protected static function getContentType()
+    {
+        // LiteSpeed server only sends 'CONTENT_TYPE'.
+        // The CGI RFC specifies that the Content-Type header value should be stored in CONTENT_TYPE,
+        // so since 7 version PHP "Fixed bug #66606 (Sets HTTP_CONTENT_TYPE but not CONTENT_TYPE)." https://www.php.net/ChangeLog-7.php.
+        // https://stackoverflow.com/a/5519834.
+        return self::ri( $_SERVER['CONTENT_TYPE'], self::ri(  $_SERVER['HTTP_CONTENT_TYPE'], '' ) );
+    }
+
+    /**
      * @param string[] $skippedHeaders
      * @return string[]
      */
     protected static function getIncomingRequestHeaders($skippedHeaders = [])
     {
+        $_SERVER['HTTP_CONTENT_TYPE'] = self::getContentType();;
+
         $results = [];
         foreach ($_SERVER as $key => $value) {
             if (in_array($key, $skippedHeaders)) {
@@ -324,7 +338,11 @@ class Proxy
                 }
             }
 
-            curl_setopt($request, CURLOPT_POSTFIELDS, $data + $_POST);
+            if ( 'application/json' !== strtolower( self::getContentType() ) ) {
+                curl_setopt($request, CURLOPT_POSTFIELDS, $data + $_POST);
+            } else {
+                curl_setopt($request, CURLOPT_POSTFIELDS, file_get_contents('php://input'));
+            }
         }
 
         $headers = static::getIncomingRequestHeaders(static::getSkippedHeaders());

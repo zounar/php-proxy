@@ -213,6 +213,7 @@ class Proxy
 
             $results[] = "$headerLine";
         }
+        $results[] = "Expect:";
 
         return $results;
     }

@@ -228,6 +228,16 @@ class Proxy
     }
 
     /**
+     * @return void
+     */
+    public static function loadConfig()
+    {
+        if (file_exists("config.php")) {
+            include "config.php";
+        }
+    }
+
+    /**
      * @return string
      */
     protected static function getTargetUrl()
@@ -460,6 +470,7 @@ class Proxy
 if (!Proxy::isInstalledWithComposer()) {
     Proxy::checkCompatibility();
     Proxy::registerErrorHandlers();
+    Proxy::loadConfig();
     $responseCode = Proxy::run();
 
     if (Proxy::isResponseCodeOk($responseCode)) {

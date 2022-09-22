@@ -300,7 +300,10 @@ class Proxy
     protected static function createRequest($targetURL)
     {
         $requestURL = $targetURL;
-        if (!empty($_SERVER['QUERY_STRING'])) {
+        if (!empty($_SERVER['REQUEST_URI'])) {
+            $requestURL .= $_SERVER['REQUEST_URI'];
+        }
+        else if (!empty($_SERVER['QUERY_STRING'])) {
             $requestURL .= "?".$_SERVER['QUERY_STRING'];
         }
         $request = curl_init($requestURL);

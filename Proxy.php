@@ -299,7 +299,14 @@ class Proxy
      */
     protected static function createRequest($targetURL)
     {
-        $request = curl_init($targetURL);
+        $requestURL = $targetURL;
+        if (!empty($_SERVER['REQUEST_URI'])) {
+            $requestURL .= $_SERVER['REQUEST_URI'];
+        }
+        else if (!empty($_SERVER['QUERY_STRING'])) {
+            $requestURL .= "?".$_SERVER['QUERY_STRING'];
+        }
+        $request = curl_init($requestURL);
 
         // Set input data
         $requestMethod = strtoupper(static::ri($_SERVER['REQUEST_METHOD']));

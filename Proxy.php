@@ -293,6 +293,21 @@ class Proxy
         return $results;
     }
 
+    // https://gist.github.com/yisraeldov/ec29d520062575c204be7ab71d3ecd2f
+    protected static function build_post_fields( $data,$existingKeys='',&$returnArray=[]){
+        if(($data instanceof CURLFile) or !(is_array($data) or is_object($data))){
+            $returnArray[$existingKeys]=$data;
+            return $returnArray;
+        }
+        else{
+            foreach ($data as $key => $item) {
+                static::build_post_fields($item,$existingKeys?$existingKeys."[$key]":$key,$returnArray);
+            }
+            return $returnArray;
+        }
+    }
+
+
     /**
      * @param string $targetURL
      * @return false|resource
@@ -324,7 +339,7 @@ class Proxy
                 }
             }
 
-            curl_setopt($request, CURLOPT_POSTFIELDS, $data + $_POST);
+            curl_setopt($request, CURLOPT_POSTFIELDS, static::build_post_fields($data + $_POST));
         }
 
         $headers = static::getIncomingRequestHeaders(static::getSkippedHeaders());

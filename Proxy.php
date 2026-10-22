@@ -111,7 +111,8 @@ class Proxy
             static::$HEADER_HTTP_PROXY_AUTH,
             static::$HEADER_HTTP_PROXY_DEBUG,
             'HTTP_HOST',
-            'HTTP_ACCEPT_ENCODING'
+            'HTTP_ACCEPT_ENCODING',
+            'HTTP_EXPECT'
         ];
     }
 
@@ -295,6 +296,62 @@ class Proxy
     }
 
     /**
+     * Flattens nested fields into names cURL can send, e.g. ['a' => ['x' => 1]] to ['a[x]' => 1]
+     * @param array $fields
+     * @param string $prefix
+     * @return array
+     */
+    protected static function flattenFields(array $fields, string $prefix = ''): array
+    {
+        $results = [];
+        foreach ($fields as $key => $value) {
+            $name = $prefix === '' ? (string)$key : "{$prefix}[$key]";
+            if (is_array($value)) {
+                $results += static::flattenFields($value, $name);
+            } else {
+                $results[$name] = $value;
+            }
+        }
+
+        return $results;
+    }
+
+    /**
+     * Converts $_FILES (including nested file inputs like docs[]) into flat CURLFile fields
+     * @return CURLFile[]
+     */
+    protected static function getFileFields(): array
+    {
+        $results = [];
+        foreach ($_FILES as $fieldName => $file) {
+            static::addFileFields($results, (string)$fieldName, $file['tmp_name'], $file['name'], $file['type'], $file['error']);
+        }
+
+        return $results;
+    }
+
+    /**
+     * $_FILES keeps nested inputs as parallel arrays per attribute, so walk them together
+     * @param CURLFile[] $results
+     * @param string $fieldName
+     * @param string|array $tmpName
+     * @param string|array $name
+     * @param string|array $type
+     * @param int|array $error
+     */
+    protected static function addFileFields(array &$results, string $fieldName, $tmpName, $name, $type, $error): void
+    {
+        if (is_array($tmpName)) {
+            foreach ($tmpName as $key => $value) {
+                static::addFileFields($results, "{$fieldName}[$key]", $value, $name[$key], $type[$key], $error[$key]);
+            }
+        } elseif ($error === UPLOAD_ERR_OK) {
+            // Skip empty or failed uploads
+            $results[$fieldName] = new CURLFile($tmpName, $type, $name);
+        }
+    }
+
+    /**
      * @param string $targetURL
      * @return false|resource|\CurlHandle
      */
@@ -302,7 +359,7 @@ class Proxy
     {
         $request = curl_init($targetURL);
 
-        // Body is rebuilt below, so the original Content-Length and Content-Type must not be forwarded as is
+        // Body may be rebuilt below, so the original Content-Length and Content-Type must not be forwarded as is
         $skippedHeaders = array_merge(static::getSkippedHeaders(), ['HTTP_CONTENT_LENGTH', 'HTTP_CONTENT_TYPE']);
         $headers = static::getIncomingRequestHeaders($skippedHeaders);
 
@@ -316,16 +373,12 @@ class Proxy
 
         // Set input data
         $contentType = static::ri($_SERVER['CONTENT_TYPE'], static::ri($_SERVER['HTTP_CONTENT_TYPE'], ''));
-        if ($requestMethod === 'POST' && stripos($contentType, 'multipart/form-data') === 0) {
-            // Raw body is not available for multipart requests, rebuild it (cURL sets its own boundary)
-            $data = [];
-            foreach ($_FILES as $fileName => $file) {
-                $data[$fileName] = new CURLFile(realpath($file['tmp_name']), $file['type'], $file['name']);
-            }
-
-            curl_setopt($request, CURLOPT_POSTFIELDS, $data + $_POST);
+        $body = $requestMethod !== 'GET' && $requestMethod !== 'HEAD' ? file_get_contents('php://input') : '';
+        if ($requestMethod === 'POST' && $body === '' && stripos($contentType, 'multipart/form-data') === 0) {
+            // PHP does not keep the raw multipart body (unless enable_post_data_reading is off),
+            // so rebuild it, cURL sets its own boundary
+            curl_setopt($request, CURLOPT_POSTFIELDS, static::getFileFields() + static::flattenFields($_POST));
         } elseif ($requestMethod !== 'GET' && $requestMethod !== 'HEAD') {
-            $body = file_get_contents('php://input');
             if ($body !== '' || $requestMethod === 'POST') {
                 curl_setopt($request, CURLOPT_POSTFIELDS, $body);
             }
@@ -334,6 +387,9 @@ class Proxy
                 $headers[] = "Content-Type: $contentType";
             }
         }
+
+        // Prevent cURL from sending "Expect: 100-continue" for larger bodies, not all servers support it
+        $headers[] = 'Expect:';
 
         curl_setopt_array($request, [
             CURLOPT_FOLLOWLOCATION => true,

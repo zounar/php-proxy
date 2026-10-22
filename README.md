@@ -1,18 +1,18 @@
 # Simple PHP Proxy
 
 This proxy script allows you to forward all HTTP/HTTPS requests to another server. Works for all common request types 
-including GET, POST requests with files, PATCH and PUT requests. It has minimal set of requirements 
-(PHP >=5.6, libcurl, gzip) which are available even on the smallest free hostings and has its own simple authorization 
-and cookie support.
+including GET, HEAD, POST (form data, files, JSON or any other raw body), PUT, PATCH and DELETE requests. It has 
+minimal set of requirements (PHP >=7.4, libcurl, gzip) which are available even on the smallest free hostings and has 
+its own simple authorization and cookie support.
 
 ## How to use
 * Copy the [Proxy.php](Proxy.php) script to publicly-accessible folder of a PHP web server (the script is standalone and has no PHP dependencies)
 * Make a cURL request targeting this script
-* Add **Proxy-Auth** header with auth key [found here](https://github.com/zounar/php-proxy/blob/master/Proxy.php#L40)
+* Add **Proxy-Auth** header with auth key [found here](https://github.com/zounar/php-proxy/blob/master/Proxy.php#L39)
 * Add **Proxy-Target-URL** header with URL to be requested by the proxy
 * (Optional) Add **Proxy-Debug** header for debug mode
 
-In order to protect using proxy by unauthorized users, consider changing `Proxy-Auth` token in [proxy source file](https://github.com/zounar/php-proxy/blob/master/Proxy.php#L40) and in all your requests.
+In order to protect using proxy by unauthorized users, consider changing `Proxy-Auth` token in [proxy source file](https://github.com/zounar/php-proxy/blob/master/Proxy.php#L39) and in all your requests.
 
 ## How to use (via composer)
 This might be useful when you want to redirect requests coming into your app. 
@@ -36,7 +36,7 @@ This might be useful when you want to redirect requests coming into your app.
     ```
 * Make a cURL request to your web
   * In the example, it would be `http://your-web.com/app/proxy`
-* Add **Proxy-Auth** header with auth key [found here](https://github.com/zounar/php-proxy/blob/master/Proxy.php#L40)
+* Add **Proxy-Auth** header with auth key [found here](https://github.com/zounar/php-proxy/blob/master/Proxy.php#L39)
 * Add **Proxy-Target-URL** header with URL to be requested by the proxy
 * (Optional) Add **Proxy-Debug** header for debug mode
 
